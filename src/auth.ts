@@ -2,8 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 const authSecret =
-  process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ??
-  (process.env.NODE_ENV === "production" ? undefined : "dev-secret");
+  process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: authSecret,

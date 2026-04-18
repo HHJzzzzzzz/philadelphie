@@ -25,6 +25,7 @@ export function LoginForm() {
       email,
       password,
       redirect: false,
+      callbackUrl,
     });
     setLoading(false);
     if (res?.error) {
