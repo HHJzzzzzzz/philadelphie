@@ -13,7 +13,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Fidele = {
   id: string;
@@ -45,30 +45,31 @@ export function FidelesTable() {
     return () => clearTimeout(t);
   }, [search]);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const q = new URLSearchParams({
-          page: String(page),
-          limit: String(limit),
-          search: searchDebounced,
-        });
-        const res = await fetch(`/api/fideles?${q}`);
-        const data = await res.json();
-        setItems(data.items ?? []);
-        setTotal(data.total ?? 0);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+  const loadItems = useCallback(async () => {
+    setLoading(true);
+    try {
+      const q = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        search: searchDebounced,
+      });
+      const res = await fetch(`/api/fideles?${q}`);
+      const data = await res.json();
+      setItems(data.items ?? []);
+      setTotal(data.total ?? 0);
+    } finally {
+      setLoading(false);
+    }
   }, [page, limit, searchDebounced]);
+
+  useEffect(() => {
+    void Promise.resolve().then(() => loadItems());
+  }, [loadItems]);
 
   async function remove(id: string) {
     if (!confirm("Supprimer ce fidèle ?")) return;
     const res = await fetch(`/api/fideles/${id}`, { method: "DELETE" });
-    if (res.ok) void load();
+    if (res.ok) void loadItems();
   }
 
   async function saveEdit(e: React.FormEvent) {
@@ -97,7 +98,7 @@ export function FidelesTable() {
       });
       if (res.ok) {
         setEditing(null);
-        void load();
+        void loadItems();
       }
     } finally {
       setSaving(false);

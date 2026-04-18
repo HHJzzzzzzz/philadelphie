@@ -20,7 +20,7 @@ import {
   ShieldOff,
   UserX,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Fidele = {
   id: string;
@@ -73,37 +73,38 @@ export function PresencesClient() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setMessage(null);
-      try {
-        const [mRes, aRes] = await Promise.all([
-          fetch(`/api/fideles/for-presence?scope=${scope}`),
-          fetch(
-            `/api/attendance?scope=${scope}&date=${encodeURIComponent(date)}`,
-          ),
-        ]);
-        const mData = await mRes.json();
-        const aData = await aRes.json();
-        const list: Fidele[] = mData.items ?? [];
-        setMembers(list);
-        const next: Record<string, AttendanceStatus> = {};
-        for (const f of list) {
-          next[f.id] = ATTENDANCE_STATUS.PRESENT;
-        }
-        if (aData.rows?.length) {
-          for (const r of aData.rows) {
-            next[r.fideleId] = r.status as AttendanceStatus;
-          }
-        }
-        setStatusMap(next);
-      } finally {
-        setLoading(false);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setMessage(null);
+    try {
+      const [mRes, aRes] = await Promise.all([
+        fetch(`/api/fideles/for-presence?scope=${scope}`),
+        fetch(
+          `/api/attendance?scope=${scope}&date=${encodeURIComponent(date)}`,
+        ),
+      ]);
+      const mData = await mRes.json();
+      const aData = await aRes.json();
+      const list: Fidele[] = mData.items ?? [];
+      setMembers(list);
+      const next: Record<string, AttendanceStatus> = {};
+      for (const f of list) {
+        next[f.id] = ATTENDANCE_STATUS.PRESENT;
       }
-    };
-    load();
-  }, [scope, date]);
+      if (aData.rows?.length) {
+        for (const r of aData.rows) {
+          next[r.fideleId] = r.status as AttendanceStatus;
+        }
+      }
+      setStatusMap(next);
+    } finally {
+      setLoading(false);
+    }
+  }, [date, scope]);
+
+  useEffect(() => {
+    void Promise.resolve().then(() => load());
+  }, [load]);
 
   function setStatus(id: string, s: AttendanceStatus) {
     setStatusMap((prev) => ({ ...prev, [id]: s }));

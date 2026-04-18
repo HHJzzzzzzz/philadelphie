@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { DashboardTopBar } from "@/components/dashboard/top-bar";
 import { Card } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
