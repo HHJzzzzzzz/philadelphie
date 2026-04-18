@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
 
 const authSecret =
   process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret";
@@ -33,8 +32,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // En production, vérifie la base de données
         const { prisma } = await import("@/lib/prisma");
+        const { compare } = await import("bcryptjs");
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
+        if (!user || !password) return null;
 
         const ok = await compare(password, user.password);
         if (!ok) return null;
@@ -47,23 +48,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
-  pages: { signIn: "/login" },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
-});
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: { signIn: "/login" },
   callbacks: {
