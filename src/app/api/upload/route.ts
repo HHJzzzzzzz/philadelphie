@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@/auth";
 import { writeFile, mkdir } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
