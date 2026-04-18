@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Fidele {
+  id              String   @id @default(cuid())
+  nom             String
+  prenom          String
+  dateNaissance   DateTime?
+  sexe            String
+  grade           String
+  jourPermanence  String
+  poste           String
+  imageUrl        String?
+  observation     String?
+  membreChorale   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  attendances     Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  date      DateTime
+  scope     String
+  fideleId  String
+  fidele    Fidele   @relation(fields: [fideleId], references: [id], onDelete: Cascade)
+  status    String
+  createdAt DateTime @default(now())
+
+  @@unique([date, scope, fideleId])
+  @@index([date, scope])
+}
