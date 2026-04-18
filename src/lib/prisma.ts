@@ -1,4 +1,3 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@/generated/prisma/client";
 
 function createPrisma() {
@@ -6,8 +5,7 @@ function createPrisma() {
   if (!url) {
     throw new Error("DATABASE_URL manquant");
   }
-  const adapter = new PrismaBetterSqlite3({ url });
-  return new PrismaClient({ adapter });
+  return new PrismaClient({ datasourceUrl: url });
 }
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
