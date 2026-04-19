@@ -4,6 +4,10 @@ import Credentials from "next-auth/providers/credentials";
 const authSecret =
   process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "dev-secret";
 
+const fixedAdminEmail = "admin@philadelphie.local";
+const fixedAdminPassword = "Admin1234!";
+const fixedAdminName = "Administrateur";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: authSecret,
   trustHost: true,
@@ -15,12 +19,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Mot de passe", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string | undefined;
-        const password = credentials?.password as string | undefined;
+        const email = credentials?.email?.toString().trim().toLowerCase() ?? "";
+        const password = credentials?.password?.toString() ?? "";
 
         // En développement, accepte toutes les connexions
         if (process.env.NODE_ENV === "development") {
-          const safeEmail = email?.trim() || "utilisateur@paroisse.local";
+          const safeEmail = email || "utilisateur@paroisse.local";
           const displayName = safeEmail === "utilisateur@paroisse.local" ? "Utilisateur" : safeEmail.split("@")[0];
 
           return {
@@ -30,12 +34,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         }
 
+        if (!email || !password) return null;
+
+        // Administrateur fixe avec coordonnées connues
+        if (email === fixedAdminEmail && password === fixedAdminPassword) {
+          return {
+            id: "admin",
+            email: fixedAdminEmail,
+            name: fixedAdminName,
+          };
+        }
+
         // En production, vérifie la base de données
         const { prisma } = await import("@/lib/prisma");
         const { compare } = await import("bcryptjs");
 
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !password) return null;
+        if (!user) return null;
 
         const ok = await compare(password, user.password);
         if (!ok) return null;

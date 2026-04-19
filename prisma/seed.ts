@@ -12,6 +12,22 @@ async function main() {
   // Supprimer tous les utilisateurs existants
   await prisma.user.deleteMany();
 
+  const adminEmail = "admin@philadelphie.local";
+  const adminPassword = await hash("Admin1234!", 12);
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    create: {
+      email: adminEmail,
+      password: adminPassword,
+      name: "Administrateur",
+    },
+    update: {
+      password: adminPassword,
+      name: "Administrateur",
+    },
+  });
+  console.log("Admin seed :", adminEmail, "/ Admin1234!");
+
   const email = "philadelphie@gmail.com";
   const password = await hash("12345678", 12);
   await prisma.user.upsert({
