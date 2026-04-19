@@ -20,6 +20,29 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Local database setup
+
+This app requires a PostgreSQL database. To run it locally:
+
+1. Copy `.env.example` to `.env`
+2. Start the database with Docker:
+   ```bash
+   npm run db:start
+   ```
+3. Seed the admin user:
+   ```bash
+   npm run db:seed
+   ```
+4. Run the app:
+   ```bash
+   npm run dev
+   ```
+
+The seeded admin credentials are:
+
+- Email: `admin@philadelphie.local`
+- Password: `Admin1234!`
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
